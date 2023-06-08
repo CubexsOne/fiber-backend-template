@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - image: harbor.cubexs.dev/prjctrepo/backend:${VERSION}
+          imagePullPolicy: Always
+          name: backend
+          env:
+            - name: ENV
+              value: INT
+            - name: PG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: host
+            - name: PG_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: port
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: username
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: password
+            - name: PG_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: database
+            - name: PG_SCHEMA
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: schema
+            - name: PG_SSL_MODE
+              valueFrom:
+                secretKeyRef:
+                  name: psql
+                  key: sslMode
+      imagePullSecrets:
+        - name: prjctps-pull-secret
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

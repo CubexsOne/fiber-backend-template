@@ -1,0 +1,57 @@
+version: "3.9"
+networks:
+  local_prjctnet:
+    external: true
+
+services:
+  backend:
+    build: .
+    image: harbor.cubexs.dev/prjctrepo/backend
+
+  backend-run:
+    image: golang:1.20.5-alpine3.17
+    container_name: backend
+    environment:
+      - ENV=DEV
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=prjctdb
+      - PG_PASSWORD=prjctdb
+      - PG_DATABASE=prjctdb
+      - PG_SCHEMA=public
+      - PG_SSL_MODE=disable
+    volumes:
+      - ./src:/app/src
+      - ./scripts/modd.sh:/app/scripts/modd.sh
+      - ./go.mod:/app/go.mod
+      - ./go.sum:/app/go.sum
+      - ./modd-run.conf:/app/modd-run.conf
+    networks:
+      - local_prjctnet
+    command: ["sh", "-c", "cd /app/scripts && ./modd.sh run"]
+
+  backend-unit-tests:
+    image: golang:1.20.5-alpine3.17
+    container_name: backend-test
+    environment:
+      - ENV=DEV
+    volumes:
+      - ./src:/app/src
+      - ./scripts/modd.sh:/app/scripts/modd.sh
+      - ./go.mod:/app/go.mod
+      - ./go.sum:/app/go.sum
+      - ./modd-dev.conf:/app/modd-dev.conf
+    networks:
+      - local_prjctnet
+    command: ["sh", "-c", "cd /app/scripts && ./modd.sh dev"]
+
+  backend-ci-unit-tests:
+    image: golang:1.20.5-alpine3.17
+    container_name: backend-test
+    environment:
+      - ENV=DEV
+    volumes:
+      - .:/app
+    networks:
+      - local_prjctnet
+    command: ["sh", "-c", "cd /app/scripts && ./test-ci.sh"]
