@@ -12,8 +12,7 @@ import (
 func Server() {
 	app := fiber.New()
 	app.Use(recover.New())
-	env := environment.ENV
-	log.Info.Println("Server is running on:", env)
+	log.Info.Println("Server is running on:", environment.ENV)
 
 	router := app.Group("/")
 	router.Use("/ws", func(c *fiber.Ctx) error {
